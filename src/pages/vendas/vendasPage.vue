@@ -2,52 +2,50 @@
   <q-layout>
     <q-page-container>
       <q-page padding>
-        <p class="text-body1">Loja</p>
+        <p class="text-body1">Loja - Produtos em Stock</p>
         <q-separator />
         <div class="q-pa-md">
           <q-table
             flat
             bordered
             grid
-            title="Produtos no Stock"
             :rows="rows"
             :columns="columns"
             row-key="name"
             :filter="filter"
             hide-header
           >
-            <template v-slot:top-right>
-              <div class="q-gutter-y-sm">
-                <q-input
-                  borderless
-                  outlined
-                  dense
-                  debounce="300"
-                  v-model="filter"
-                  placeholder="Buscar produto"
-                >
-                  <template v-slot:append>
-                    <q-icon name="search" />
-                  </template>
-                </q-input>
-
-                <q-select
-                  dense
-                  outlined
-                  v-model="form.find"
-                  :options="categorias"
-                  label="Busque por categoria"
-                  option-value="id"
-                  option-label="categoria"
-                  map-options
-                  emit-value
-                  class="q-mt-sm"
-                >
-                  <template v-slot:prepend>
-                    <q-icon name="mdi-shape-plus" />
-                  </template>
-                </q-select>
-              </div>
+            <template v-slot:top>
+              <q-input
+                borderless
+                outlined
+                dense
+                debounce="300"
+                v-model="filter"
+                placeholder="Buscar produto"
+              >
+                <template v-slot:append>
+                  <q-icon name="search" />
+                </template>
+              </q-input>
+              <q-space />
+              <q-select
+                dense
+                outlined
+                v-model="form.find"
+                :options="categorias"
+                label="Busque por categoria"
+                option-value="id"
+                option-label="categoria"
+                map-options
+                emit-value
+                class="q-mt-sm col-12"
+                style="max-width: 250px"
+              >
+                <template v-slot:prepend>
+                  <q-icon name="mdi-shape-plus" />
+                </template>
+              </q-select>
             </template>
 
             <template v-slot:item="props">

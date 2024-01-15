@@ -2,7 +2,23 @@
   <q-layout>
     <q-page-container>
       <q-page padding>
-        <p class="text-body1">Adicionar vendas</p>
+        <div class="row">
+          <p class="text-body1">Adicionar vendas</p>
+          <q-space />
+          <q-btn
+            color="green-6"
+            flat
+            dense
+            class=""
+            label="total de vendas: "
+            no-caps
+            icon="mdi-cart"
+            size="sm"
+            @click="listaVendas"
+          >
+            <span class="text-red-10"> {{ totalVenda }}</span>
+          </q-btn>
+        </div>
         <q-separator />
         <q-form
           class="row justify-center q-gutter-sm q-mt-md"
@@ -100,7 +116,7 @@
               </div>
             </div>
           </div>
-          <div class="col-6">
+          <div class="col-6" hidden>
             <q-input
               type="text"
               dense
@@ -114,16 +130,25 @@
               </template>
             </q-input>
           </div>
-          <div class="col-6 q-mt-md text-right">
+          <div class="row col-6 q-mt-md">
             <span class="text-body2">
-              Total: <b>{{ formatCurrency(produto.pagamento) }}</b></span
+              Resto/Troco:
+              <b class="text-red-4">{{
+                formatCurrency(produto.resto)
+              }}</b></span
+            >
+            <q-space />
+            <span class="text-body2">
+              Total:
+              <b class="text-green-10">{{
+                formatCurrency(produto.pagamento)
+              }}</b></span
             >
           </div>
           <div class="col-6">
             <q-btn
               type="submit"
               dense
-              flat
               color="green-5"
               outlined
               class="full-width"
@@ -138,16 +163,19 @@
 </template>
 
 <script>
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { defineComponent, ref, onMounted, watch } from "vue";
 import { db } from "src/boot/localbase";
 import { formatCurrency } from "./utils";
 import { notification } from "src/utils/notify";
+import { date } from "quasar";
 
 export default defineComponent({
   setup() {
     const tabela = "produtos";
     const route = useRoute();
+    const router = useRouter();
+    const totalVenda = ref(0);
     const { notifyError, notifySuccess, notifyinfo } = notification();
     const produto = ref({
       produto_key: "",
@@ -161,12 +189,27 @@ export default defineComponent({
       contacto: "",
       valorEntrada: "",
       resto: 0,
+      dataVenda: new Date().toJSON().slice(0, 10),
     });
 
     onMounted(() => {
+      contarVendas();
       const key = route.params.key;
       carregarProd(key);
     });
+
+    const contarVendas = async () => {
+      try {
+        const response = await db.collection("vendasRealizadas").get();
+        totalVenda.value = response.length;
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+
+    const listaVendas = () => {
+      router.push({ name: "listarVendas" });
+    };
 
     watch(produto.value, (valor) => {
       // const valor1 = valor.valorEntrada;
@@ -178,15 +221,15 @@ export default defineComponent({
       if (valor.valorEntrada != 0) {
         if (valor.pagamento > valor.valorEntrada) {
           produto.value.pagamento = valorProd;
-          notifyinfo(
-            "O cliente não tem valor suficiente para pagar este produto"
-          );
+          // notifyinfo(
+          //   "O cliente não tem valor suficiente para pagar este produto"
+          // );
           return;
         } else {
           if (valor.quantidadeCliente > valor.quantidade) {
-            notifyinfo(
-              "A quantidade mensionada é superior da quantidade disponível em stock"
-            );
+            // notifyinfo(
+            //   "A quantidade mensionada é superior da quantidade disponível em stock"
+            // );
             return;
           } else {
             if (valorResto <= 0) {
@@ -219,13 +262,6 @@ export default defineComponent({
 
     const saveVendas = async () => {
       try {
-        if (produto.value.valorEntrada < produto.value.preco) {
-          notifyinfo(
-            "O valor que recebeu do cliente é menor que o preço total do produto"
-          );
-          return;
-        }
-
         if (produto.value.quantidadeCliente > produto.value.quantidade) {
           notifyinfo(
             "A quantidade mensionada é superior da quantidade disponível no stock!"
@@ -246,21 +282,29 @@ export default defineComponent({
         await db.collection("vendasRealizadas").add({
           produto: produto.value.produto,
           pago: produto.value.pagamento,
+          preco: produto.value.preco,
           quantidade: produto.value.quantidadeCliente,
           cliente: produto.value.cliente,
           contacto: produto.value.contacto,
           funcionario: "Ildo cuema",
+          //data: produto.value.dataVenda,
+          data: "2024-01-15",
         });
 
         await db.collection(tabela).doc(key).update({
           quantidade: qt,
         });
-
+        contarVendas();
         carregarProd(produto.value.produto_key);
         notifySuccess("Produto vendido com sucesso...!");
       } catch (error) {
         console.log(error.message);
       } finally {
+        produto.value.quantidadeCliente = 1;
+        produto.value.valorEntrada = 0;
+        produto.value.resto = 0;
+        produto.value.cliente = "";
+        produto.value.contacto = "";
       }
     };
 
@@ -271,6 +315,9 @@ export default defineComponent({
       carregarProd,
       saveVendas,
       formatCurrency,
+      contarVendas,
+      totalVenda,
+      listaVendas,
     };
   },
 });

@@ -273,10 +273,12 @@ export default {
     const editForm = async (id) => {
       try {
         const response = await db.collection(tabela).doc(id).get();
+        form.value.categoria = response.categoria;
         form.value.produto = response.produto;
         form.value.preco = response.preco;
         form.value.preco = response.preco;
         form.value.img_url = response.img_url;
+        form.value.quantidade = response.quantidade;
         isUpdate.value = id;
         formularioCad.value = true;
       } catch (error) {

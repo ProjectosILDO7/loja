@@ -13,7 +13,7 @@
 
         <q-toolbar-title> Loja </q-toolbar-title>
 
-        <div>Ola loja</div>
+        <div>Ola! Ildo Cuema</div>
       </q-toolbar>
     </q-header>
 

@@ -24,13 +24,19 @@ const linksList = [
     routeName: "vendas",
   },
   {
+    title: "Vendas realizadas",
+    caption: "Detalhes de todas as vendas",
+    icon: "mdi-cart",
+    routeName: "listarVendas",
+  },
+  {
     title: "Relatórios",
     caption: "Gerar relatórios de vendas",
     icon: "mdi-file-table",
     routeName: "relatorios",
   },
   {
-    title: "Config",
+    title: "Configuração",
     caption: "Configurações da loja",
     icon: "mdi-cog",
     routeName: "configs",
