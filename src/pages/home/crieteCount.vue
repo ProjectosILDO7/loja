@@ -11,6 +11,22 @@
             <q-input
               dense
               outlined
+              v-model="form.name"
+              label="Nome"
+              class="col-12"
+              lazy-rules
+              :rules="[
+                (val) => (val && val.length > 0) || 'Porfavor digite seu nome',
+              ]"
+            >
+              <template v-slot:prepend>
+                <q-icon name="mdi-account" />
+              </template>
+            </q-input>
+
+            <q-input
+              dense
+              outlined
               v-model="form.email"
               label="E-mail"
               class="col-12"
@@ -36,7 +52,7 @@
                 (val) =>
                   (val !== null && val !== '') || 'Porfavor digite sua senha',
                 (val) =>
-                  (val > 0 && val >= 6) ||
+                  val.length >= 6 ||
                   'A sua senha deve ter maior ou igual a 6 caracteres',
               ]"
             >
@@ -47,22 +63,22 @@
 
             <q-btn
               type="submit"
-              label="Entrar"
+              label="Criar conta"
               class="full-width q-mt-lg"
               glossy
               color="primary"
-              icon="mdi-login"
-              no-caps
-            />
-            <q-btn
-              flat
-              label="Criar conta na loja"
-              class="full-width q-mt-lg"
-              color="secondary"
               icon="mdi-account-tie"
               no-caps
-              @click="crieteCount"
-              v-if="isAdmin"
+            />
+
+            <q-btn
+              flat
+              label="Ir para o login"
+              class="full-width q-mt-lg"
+              color="secondary"
+              icon="mdi-login"
+              no-caps
+              @click="goToLogin"
             />
           </div>
         </q-form>
@@ -73,7 +89,7 @@
 
 <script>
 import useNotification from "src/utils/notify";
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import { Loading, useQuasar } from "quasar";
 import { useRouter } from "vue-router";
 import { db } from "src/boot/localbase";
@@ -83,63 +99,39 @@ export default {
     const { notifyError, notifySuccess } = useNotification();
     const $q = useQuasar();
     const router = useRouter();
-    const isAdmin = ref(false);
     const form = ref({
+      name: "",
       email: "",
       password: "",
-      router,
     });
 
-    const crieteCount = () => {
-      router.push({ name: "crietCount" });
+    const goToLogin = () => {
+      router.push({ name: "login" });
     };
-
-    onMounted(async () => {
-      try {
-        const result = await db
-          .collection("users")
-          .get()
-          .then((item) => item.filter((user) => user.acesso == "admin"));
-        console.log(result);
-        if (result.length > 0) {
-          isAdmin.value = false;
-        } else {
-          isAdmin.value = true;
-        }
-      } catch (error) {
-        console.log(error.message);
-      }
-    });
 
     const userLogin = async () => {
       try {
         $q.loading.show();
-        const getEmail = await db
+        const user = await db
           .collection("users")
           .get()
-          .then((item) =>
-            item.filter((user) => user.email == form.value.email)
+          .then((user) =>
+            user.filter((email) => email.email == form.value.email)
           );
-        if (getEmail.length > 0 && getEmail[0].status == 1) {
-          const pass = await db
-            .collection("users")
-            .get()
-            .then((iten) =>
-              iten.filter(
-                (password) => password.password == form.value.password
-              )
-            );
-          if (pass.length > 0) {
-            router.push({ name: "admin" });
-            notifySuccess("Acesso permitido");
-          } else {
-            notifyError("A senha que digitou está errada...!");
-          }
-        } else {
-          notifyError(
-            "Acesso negado, ou precisas de permissão do Administrador...!"
-          );
+        if (user.length > 0) {
+          notifyError("Já existe um suário com estas credenciais...!");
           return;
+        } else {
+          const { name, email, password } = form.value;
+          await db.collection("users").add({
+            name: name,
+            email: email,
+            password: password,
+            acesso: "admin",
+            status: 1,
+          });
+          notifySuccess("Conta criada com sucesso");
+          router.push({ name: "login" });
         }
       } catch (error) {
         notifyError(error.message);
@@ -150,8 +142,7 @@ export default {
     return {
       form,
       userLogin,
-      crieteCount,
-      isAdmin,
+      goToLogin,
     };
   },
 };

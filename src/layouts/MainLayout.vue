@@ -11,9 +11,52 @@
           @click="toggleLeftDrawer"
         />
 
-        <q-toolbar-title> Loja </q-toolbar-title>
+        <q-toolbar-title>
+          <span v-if="brand.name">
+            <span class="q-ml-sm">{{ brand.name }}</span></span
+          >
+          <span v-else> <span class="q-ml-sm">Loja && Stock</span></span>
+        </q-toolbar-title>
 
-        <div>Ola! Ildo Cuema</div>
+        <darkmode-change />
+        <q-btn-dropdown
+          flat
+          icon="person"
+          :label="user"
+          v-if="user && $q.platform.is.desktop"
+        >
+          <q-list>
+            <q-item clickable v-close-popup @click="onItemClick">
+              <q-item-section>
+                <q-item-label
+                  ><q-avatar icon="mdi-account" /> Perfil
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item clickable v-close-popup @click="addFuncionarios">
+              <q-item-section>
+                <q-item-label
+                  ><q-avatar icon="mdi-account-tie" /> Funcionários
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item clickable v-close-popup @click="formConfig">
+              <q-item-section>
+                <q-item-label
+                  ><q-avatar icon="mdi-cog" /> Configurações</q-item-label
+                >
+              </q-item-section>
+            </q-item>
+            <q-separator />
+            <q-item clickable v-close-popup @click="logoutPage">
+              <q-item-section>
+                <q-item-label><q-avatar icon="mdi-logout" />Sair</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-btn-dropdown>
       </q-toolbar>
     </q-header>
 
@@ -36,9 +79,11 @@
 </template>
 
 <script>
-import { defineComponent, ref } from "vue";
+import { defineComponent, ref, onMounted } from "vue";
 import EssentialLink from "components/EssentialLink.vue";
-// const linksList = [
+import useApi from "src/composible/userApi";
+import darkmodeChange from "src/components/darkMode/darkMode.vue";
+
 //   {
 //     title: "Home",
 //     caption: "Painel inicial",
@@ -77,22 +122,62 @@ import EssentialLink from "components/EssentialLink.vue";
 //   },
 // ];
 import { linksList } from "./Links.js";
+import { db } from "src/boot/localbase";
+import { useRouter } from "vue-router";
 export default defineComponent({
   name: "MainLayout",
 
   components: {
     EssentialLink,
+    darkmodeChange,
   },
 
   setup() {
     const leftDrawerOpen = ref(false);
+    const { brand, getBrand } = useApi();
+    const user = ref("");
+    const router = useRouter();
+
+    onMounted(() => {
+      getBrand();
+      CarregarUser();
+    });
+
+    const formConfig = () => {
+      router.push({ name: "configs" });
+    };
+
+    const addFuncionarios = () => {
+      router.push({ name: "addFuncionarios" });
+    };
+
+    const CarregarUser = async () => {
+      try {
+        const userName = await db
+          .collection("users")
+          .get()
+          .then((item) => item.filter((data) => data.status == 1));
+        console.log(userName[0].name);
+        if (userName.length > 0) {
+          user.value = userName[0].name;
+        } else {
+          router.push({ name: "login" });
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
 
     return {
       essentialLinks: linksList,
       leftDrawerOpen,
+      brand,
+      user,
       toggleLeftDrawer() {
         leftDrawerOpen.value = !leftDrawerOpen.value;
       },
+      formConfig,
+      addFuncionarios,
     };
   },
 });

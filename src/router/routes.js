@@ -48,6 +48,17 @@ const routes = [
         name: "configs",
         component: () => import("pages/config/configPage.vue"),
       },
+      {
+        path: "/form-funcionarios",
+        name: "addFuncionarios",
+        component: () => import("pages/funcionarios/addFuncionarios.vue"),
+      },
+      {
+        path: "/list-funcionarios",
+        name: "listFuncionarios",
+        component: () =>
+          import("src/pages/funcionarios/listarFuncionarios.vue"),
+      },
     ],
   },
 
@@ -59,6 +70,11 @@ const routes = [
         path: "",
         name: "login",
         component: () => import("src/pages/home/loginPage.vue"),
+      },
+      {
+        path: "/criete-count",
+        name: "crietCount",
+        component: () => import("src/pages/home/crieteCount.vue"),
       },
     ],
   },
