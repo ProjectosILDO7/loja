@@ -26,13 +26,13 @@
           v-if="user && $q.platform.is.desktop"
         >
           <q-list>
-            <q-item clickable v-close-popup @click="onItemClick">
+            <!-- <q-item clickable v-close-popup @click="onItemClick">
               <q-item-section>
                 <q-item-label
                   ><q-avatar icon="mdi-account" /> Perfil
                 </q-item-label>
               </q-item-section>
-            </q-item>
+            </q-item> -->
 
             <q-item clickable v-close-popup @click="addFuncionarios">
               <q-item-section>
@@ -124,6 +124,8 @@ import darkmodeChange from "src/components/darkMode/darkMode.vue";
 import { linksList } from "./Links.js";
 import { db } from "src/boot/localbase";
 import { useRouter } from "vue-router";
+import { LocalStorage, useQuasar } from "quasar";
+
 export default defineComponent({
   name: "MainLayout",
 
@@ -137,7 +139,8 @@ export default defineComponent({
     const { brand, getBrand } = useApi();
     const user = ref("");
     const router = useRouter();
-
+    const idUser = ref("");
+    const $q = useQuasar();
     onMounted(() => {
       getBrand();
       CarregarUser();
@@ -157,7 +160,7 @@ export default defineComponent({
           .collection("users")
           .get()
           .then((item) => item.filter((data) => data.status == 1));
-        console.log(userName[0].name);
+        idUser.value = userName[0].email;
         if (userName.length > 0) {
           user.value = userName[0].name;
         } else {
@@ -165,6 +168,17 @@ export default defineComponent({
         }
       } catch (error) {
         console.log(error.message);
+      }
+    };
+
+    const logoutPage = async () => {
+      const email = LocalStorage.getItem("loja");
+      if (email != null) {
+        $q.loading.show();
+        await LocalStorage.clear("loja");
+        router.push({ name: "" });
+        location.reload();
+        $q.loading.hide();
       }
     };
 
@@ -178,6 +192,8 @@ export default defineComponent({
       },
       formConfig,
       addFuncionarios,
+      idUser,
+      logoutPage,
     };
   },
 });

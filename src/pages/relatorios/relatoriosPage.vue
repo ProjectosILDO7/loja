@@ -64,7 +64,7 @@
 <script>
 import { ref, onMounted, watch } from "vue";
 import { columns } from "./table";
-import { formatCurrency } from "../produtos/utils";
+import { formatCurrency } from "src/utils/formatNumber";
 import { db } from "src/boot/localbase";
 import { useQuasar } from "quasar";
 import { notification } from "src/utils/notify";

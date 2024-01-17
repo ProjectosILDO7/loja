@@ -32,13 +32,18 @@
                 dense
                 outlined
                 type="file"
-                @change="handleImageUpload"
+                @change="handleFileUpload"
                 class="q-mt-sm"
                 accept="image/*"
               />
 
               <q-avatar square size="100px" font-size="82px" text-color="white">
-                <q-img :src="form.img_url" />
+                <q-img
+                  v-if="form.imageUrl"
+                  :src="form.imageUrl"
+                  :alt="form.produto"
+                  style="max-width: 100%"
+                />
               </q-avatar>
             </div>
             <div class="col-4">
@@ -119,9 +124,6 @@
                 <template v-slot:prepend>
                   <q-icon name="mdi-chess-bishop" /> </template
               ></q-input>
-              <span class="text-body1">
-                {{ formateNumber }}
-              </span>
             </div>
             <div class="col-4">
               <q-btn
@@ -156,7 +158,7 @@
           <template v-slot:body-cell-img_url="props">
             <q-td :props="props">
               <q-avatar square size="80px" font-size="82px" text-color="white">
-                <q-img :src="props.row.img_url"></q-img>
+                <q-img :src="props.row.imageUrl.imageUrl"></q-img>
               </q-avatar>
             </q-td>
           </template>
@@ -194,6 +196,7 @@ import { onMounted, ref } from "vue";
 import { columns } from "./table";
 import { Loading, Notify, Dialog } from "quasar";
 import { db } from "src/boot/localbase";
+import { formatCurrency } from "src/utils/formatNumber";
 
 export default {
   components: {},
@@ -205,7 +208,6 @@ export default {
     const rows = ref([]);
     const formularioCad = ref(false);
     const categorias = ref([]);
-    const formateNumber = ref(0);
 
     const form = ref({
       categoria: "",
@@ -213,7 +215,7 @@ export default {
       quantidade: 0,
       preco: 0,
       data: new Date().toJSON().slice(0, 10),
-      img_url: "",
+      imageUrl: "",
     });
 
     const formatarMoeda = () => {
@@ -223,40 +225,17 @@ export default {
       // Outras lógicas de formatação podem ser adicionadas aqui
     };
 
-    const formatCurrency = (value) => {
-      // Lógica para formatar a moeda usando Intl.NumberFormat
-      const formatter = new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "AOA",
-      }).format(value);
-      console.log(formatter);
-      formateNumber.value = formatter;
-      return formatter;
-    };
-
-    const handleImageUpload = (event) => {
+    const handleFileUpload = (event) => {
       const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
 
-      // Converte a imagem para base64
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64Image = reader.result;
-        //saveImageToDatabase(base64Image);
-        form.value.img_url = URL.createObjectURL(dataURLtoBlob(base64Image));
-      };
-      reader.readAsDataURL(file);
-    };
+        reader.onload = (e) => {
+          form.value.imageUrl = e.target.result;
+        };
 
-    const dataURLtoBlob = (dataURL) => {
-      const arr = dataURL.split(",");
-      const mime = arr[0].match(/:(.*?);/)[1];
-      const bstr = atob(arr[1]);
-      let n = bstr.length;
-      const u8arr = new Uint8Array(n);
-      while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
+        reader.readAsDataURL(file);
       }
-      return new Blob([u8arr], { type: mime });
     };
 
     const cleanForm = () => {
@@ -266,7 +245,7 @@ export default {
         quantidade: 0,
         preco: 0,
         data: new Date().toJSON().slice(0, 10),
-        img_url: "",
+        imageUrl: "",
       };
     };
 
@@ -328,46 +307,60 @@ export default {
         } else {
           if (isUpdate.value) {
             Loading.show();
-            const { produto, categoria, preco, quantidade, data, img_url } =
-              form.value;
-            await db.collection(tabela).doc(isUpdate.value).update({
-              produto: produto,
-              categoria: categoria.categoria,
-              preco: preco,
-              quantidade: quantidade,
-              data: data,
-              img_url: img_url,
-            });
-            db.objectStorage;
-            Notify.create({
-              message: "O produto foi actualizado com sucesso",
-              position: "top",
-              icon: "mdi-check-circle",
-              color: "green-10",
-            });
+            if (form.value.imageUrl) {
+              const imageObject = {
+                produto: form.value.produto,
+                imageUrl: form.value.imageUrl,
+              };
+              console.log(imageObject);
+              const { produto, categoria, preco, quantidade, data, img_url } =
+                form.value;
+              await db.collection(tabela).doc(isUpdate.value).update({
+                produto: produto,
+                categoria: categoria.categoria,
+                preco: preco,
+                quantidade: quantidade,
+                data: data,
+                imageUrl: imageObject,
+              });
+              db.objectStorage;
+              Notify.create({
+                message: "O produto foi actualizado com sucesso",
+                position: "top",
+                icon: "mdi-check-circle",
+                color: "green-10",
+              });
+            }
             formularioCad.value = false;
             cleanForm();
             formularioCad.value = false;
           } else {
-            Loading.show();
-            const { produto, categoria, preco, quantidade, data, img_url } =
-              form.value;
-            await db.collection(tabela).add({
-              produto: produto,
-              categoria: categoria.categoria,
-              preco: preco,
-              quantidade: quantidade,
-              data: data,
-              img_url: img_url,
-            });
-            Notify.create({
-              message: "Produto salvo com sucesso",
-              position: "top",
-              icon: "mdi-check-circle",
-              color: "green-10",
-            });
-            formularioCad.value = false;
-            cleanForm();
+            if (form.value.imageUrl) {
+              const imageObject = {
+                produto: form.value.produto,
+                imageUrl: form.value.imageUrl,
+              };
+              console.log(imageObject);
+              Loading.show();
+              const { produto, categoria, preco, quantidade, data, img_url } =
+                form.value;
+              await db.collection(tabela).add({
+                produto: produto,
+                categoria: categoria.categoria,
+                preco: preco,
+                quantidade: quantidade,
+                data: data,
+                imageUrl: imageObject,
+              });
+              Notify.create({
+                message: "Produto salvo com sucesso",
+                position: "top",
+                icon: "mdi-check-circle",
+                color: "green-10",
+              });
+              formularioCad.value = false;
+              cleanForm();
+            }
           }
         }
       } catch (error) {
@@ -444,7 +437,7 @@ export default {
       editForm,
       carregarInfoCateg,
       categorias,
-      handleImageUpload,
+      handleFileUpload,
       formatarMoeda,
       formatCurrency,
     };

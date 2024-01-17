@@ -14,6 +14,7 @@
             row-key="name"
             :filter="filter"
             hide-header
+            rows-per-page-options="3"
           >
             <template v-slot:top>
               <q-input
@@ -52,31 +53,36 @@
               <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
                 <q-card flat bordered>
                   <q-card-section class="text-center">
-                    <q-img :src="props.row.img_url" style="max-width: 80px" />
+                    <q-img
+                      :src="props.row.imageUrl.imageUrl"
+                      style="width: 300px; height: 200px; object-fit: cover"
+                    />
                     <br />
                     <strong>{{ props.row.produto }}</strong>
                   </q-card-section>
                   <q-separator />
-                  <q-card-section
-                    class="flex flex-center"
-                    :style="{ fontSize: props.row.calories / 2 + 'px' }"
-                  >
-                    <div>
-                      Preço:
-                      <span class="text-green-10">{{
-                        formatCurrency(props.row.preco)
-                      }}</span>
-                    </div>
-                  </q-card-section>
-                  <q-card-section class="q-mt-sm">
-                    <div>Quant.: {{ props.row.quantidade }}</div>
-                  </q-card-section>
+                  <div class="row justify-left q-mt-sm">
+                    <span class="q-ml-sm">
+                      Preço Unit:
+                      <span class="text-green-10"
+                        ><b>{{ formatCurrency(props.row.preco) }}</b></span
+                      >
+                    </span>
+                  </div>
+                  <div class="row justify-left q-mt-sm">
+                    <span class="q-ml-sm">
+                      <span
+                        >Quantidade em Stock:
+                        <b>{{ props.row.quantidade }}</b></span
+                      >
+                    </span>
+                  </div>
                   <q-card-section class="q-mt-sm text-right">
                     <q-btn
                       outline
+                      flat
                       color="green-8"
                       dense
-                      label="Adicionar a venda"
                       icon="mdi-cart-plus"
                       no-caps
                       @click="addVenda(props.row)"

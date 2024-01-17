@@ -131,7 +131,7 @@ export default {
             email: email,
             password: password,
             acesso: "funcionario",
-            status: 1,
+            status: 0,
           });
           notifySuccess("Conta criada com sucesso");
           router.push({ name: "listFuncionarios" });

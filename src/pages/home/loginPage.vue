@@ -74,7 +74,7 @@
 <script>
 import useNotification from "src/utils/notify";
 import { ref, onMounted } from "vue";
-import { Loading, useQuasar } from "quasar";
+import { Loading, useQuasar, LocalStorage } from "quasar";
 import { useRouter } from "vue-router";
 import { db } from "src/boot/localbase";
 export default {
@@ -130,6 +130,7 @@ export default {
               )
             );
           if (pass.length > 0) {
+            LocalStorage.set("loja", getEmail[0].name);
             router.push({ name: "admin" });
             notifySuccess("Acesso permitido");
           } else {

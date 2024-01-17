@@ -24,6 +24,14 @@
               unmasked-value
             >
             </q-input>
+            <q-input
+              dense
+              outlined
+              type="number"
+              v-model="form.nif"
+              label="Nº do NIF"
+            >
+            </q-input>
             <div class="row justify-center q-gutter-x-lg q-pa-md">
               <q-color
                 v-model="form.primary"
@@ -62,10 +70,13 @@ export default defineComponent({
     const { setBrand } = useBrand();
     const $q = useQuasar();
     const router = useRouter();
+    const totalConfig = ref(0);
+    const idConfig = ref("");
 
     const form = ref({
       name: "",
       phone: "",
+      nif: "",
       primary: "",
       secondary: "",
     });
@@ -77,40 +88,50 @@ export default defineComponent({
     const carregarConfig = async () => {
       try {
         $q.loading.show();
-        const config = await db.collection(tabela).get();
-        form.value = config[0];
+        const config = await db.collection(tabela).get({ keys: true });
+        form.value.name = config[0].data.name;
+        form.value.phone = config[0].data.phone;
+        form.value.nif = config[0].data.nif;
+        form.value.primary = config[0].data.primary;
+        form.value.secondary = config[0].data.secondary;
+        idConfig.value = config[0].key;
+        totalConfig.value = config.length;
       } catch (error) {
-        console.log(error.message);
       } finally {
         $q.loading.hide();
       }
     };
 
     const saveConfig = async () => {
+      console.log(totalConfig);
       try {
-        if (form.value.id) {
+        if (totalConfig.value > 0) {
           $q.loading.show();
-          const { name, phone, primary, secondary } = form.value;
-          await db.collection(tabela).add({
+          const { name, phone, nif, primary, secondary } = form.value;
+          await db.collection(tabela).doc(idConfig.value).update({
             name: name,
             phone: phone,
+            nif: nif,
             primary: primary,
             secondary: secondary,
           });
           setBrand(form.value.primary, form.value.secondary);
           carregarConfig();
+          location.reload();
         } else {
           $q.loading.show();
-          const { name, phone, primary, secondary } = form.value;
+          const { name, phone, nif, primary, secondary } = form.value;
           console.log(name);
           await db.collection(tabela).add({
             name: name,
             phone: phone,
+            nif: nif,
             primary: primary,
             secondary: secondary,
           });
           setBrand(form.value.primary, form.value.secondary);
           carregarConfig();
+          location.reload();
         }
       } catch (error) {
         console.log(error.message);
@@ -119,7 +140,7 @@ export default defineComponent({
         router.push({ name: "admin" });
       }
     };
-    return { form, saveConfig, carregarConfig };
+    return { form, saveConfig, carregarConfig, totalConfig, idConfig };
   },
 });
 </script>

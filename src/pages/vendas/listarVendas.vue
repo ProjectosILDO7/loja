@@ -7,7 +7,7 @@
           <q-space />
           <q-btn
             dense
-            size="sm"
+            size="md"
             flat
             label="Total em caixa:  "
             icon="mdi-cart"
@@ -142,7 +142,7 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { db } from "src/boot/localbase";
 import { columns } from "./tableVendas";
-import { formatCurrency } from "../produtos/utils";
+import { formatCurrency } from "src/utils/formatNumber";
 import { useQuasar } from "quasar";
 import { notification } from "src/utils/notify";
 import JsonExcel from "vue-json-excel3";

@@ -1,3 +1,6 @@
+import { useRouter } from "vue-router";
+import { LocalStorage } from "quasar";
+const router = useRouter();
 const routes = [
   {
     path: "/admin",
@@ -14,14 +17,9 @@ const routes = [
         component: () => import("pages/categorias/categoriaPage.vue"),
       },
       {
-        path: "/edit-form/:key?",
-        name: "editFormCategoria",
-        component: () => import("pages/categorias/editFormCategoria.vue"),
-      },
-      {
         path: "/produtos",
         name: "produtos",
-        component: () => import("pages/produtos/produtosPage.vue"),
+        component: () => import("src/pages/produtos/produtosPage.vue"),
       },
       {
         path: "/vendas",
@@ -60,6 +58,7 @@ const routes = [
           import("src/pages/funcionarios/listarFuncionarios.vue"),
       },
     ],
+    meta: { requiresAuth: true },
   },
 
   {
