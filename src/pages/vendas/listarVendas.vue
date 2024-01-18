@@ -143,7 +143,7 @@ import { useRoute, useRouter } from "vue-router";
 import { db } from "src/boot/localbase";
 import { columns } from "./tableVendas";
 import { formatCurrency } from "src/utils/formatNumber";
-import { useQuasar } from "quasar";
+import { useQuasar, LocalStorage } from "quasar";
 import { notification } from "src/utils/notify";
 import JsonExcel from "vue-json-excel3";
 import { fields } from "./fieldsExport";
@@ -156,6 +156,7 @@ export default {
     const filter = ref("");
     const valorTotal = ref(0);
     const show = ref(false);
+    const router = useRouter();
     const tabela = "vendasRealizadas";
 
     const detalhesFuncionario = ref({
@@ -168,6 +169,10 @@ export default {
     onMounted(() => {
       carregarVendas();
       valorT();
+      if (LocalStorage.getItem("acessp") != "admin") {
+        notifyinfo("Caro funcionário, existem área de acesso exclusivo!.");
+        router.push({ name: "vendas" });
+      }
     });
 
     const startDownload = () => {

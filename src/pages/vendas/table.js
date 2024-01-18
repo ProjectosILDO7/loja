@@ -38,6 +38,22 @@ const columns = [
     align: "left",
     format: (val) => formatCurrency(val),
   },
+  {
+    name: "impostoIVA",
+    field: "impostoIVA",
+    label: "Imposto",
+    sortable: true,
+    align: "left",
+    format: (val) => formatCurrency(val),
+  },
+  {
+    name: "valorAcrescentado",
+    field: "valorAcrescentado",
+    label: "Preço total",
+    sortable: true,
+    align: "left",
+    format: (val) => formatCurrency(val),
+  },
 
   {
     name: "options",

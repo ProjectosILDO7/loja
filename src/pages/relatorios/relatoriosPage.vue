@@ -6,12 +6,12 @@
         <q-separator />
         <div class="row">
           <div class="col-4">
-            <span class="text-blue-10 q-mt-sm"
-              ><b>Busque vendas realizadas por data Específica</b></span
+            <span class="primary q-mt-sm"
+              ><b>Busque vendas realizadas por dia específico</b></span
             >
             <q-date
               flat
-              v-model="date"
+              v-model="date.date"
               minimal
               today-btn
               mask="YYYY-MM-DD"
@@ -27,7 +27,7 @@
               dense
               :rows="rows"
               :columns="columns"
-              :filter="date"
+              :filter="date.date"
               row-key="name"
             >
               <template v-slot:body-cell-options="props">
@@ -42,20 +42,50 @@
                   />
                 </q-td>
               </template>
+              <template v-slot:top>
+                <div class="q-gutter-sm">
+                  <q-input
+                    outlined
+                    dense
+                    type="text"
+                    label="Imforme o ano"
+                    v-model="date.searchAno"
+                  ></q-input>
+
+                  <q-select
+                    outlined
+                    dense
+                    v-model="date.searchMes"
+                    :options="meses"
+                    label="Busque o mês"
+                    option-value="id"
+                    emit-value
+                    map-options
+                    option-label="mes"
+                  />
+                </div>
+              </template>
             </q-table>
           </div>
         </div>
         <q-separator />
         <div class="row">
-          <div class="col-4">
+          <div class="col-4 q-mt-sm">
             <span class=""
-              >Data selecionada: <b>{{ date }}</b></span
+              >Data selecionada: <b>{{ date.date }}</b></span
             >
           </div>
           <q-space />
-          <span class="text-body1"
-            >Ganhos obtidos: <b>{{ formatCurrency(total) }}</b></span
-          >
+          <div class="q-gutter-sm q-mt-sm">
+            <span class=""
+              >Total de Imposto:
+              <b class="text-red-8">{{ formatCurrency(totalImposto) }}</b></span
+            >
+            <span class=""
+              >Ganhos obtidos:
+              <b class="text-green-8">{{ formatCurrency(total) }}</b></span
+            >
+          </div>
         </div>
       </q-page>
     </q-page-container>
@@ -66,8 +96,9 @@ import { ref, onMounted, watch } from "vue";
 import { columns } from "./table";
 import { formatCurrency } from "src/utils/formatNumber";
 import { db } from "src/boot/localbase";
-import { useQuasar } from "quasar";
+import { useQuasar, LocalStorage } from "quasar";
 import { notification } from "src/utils/notify";
+import { useRouter } from "vue-router";
 
 export default {
   setup() {
@@ -75,11 +106,37 @@ export default {
     const $q = useQuasar();
     const { notifyError, notifySuccess, notifyinfo } = notification();
     const total = ref(0);
+    const router = useRouter();
+    const totalImposto = ref(0);
     const rows = ref([]);
-    const date = ref("");
+    const date = ref({
+      searchAno: "",
+      searchMes: "",
+      date: "",
+    });
+    const meses = ref([
+      { id: "-01", mes: "Janeiro" },
+      { id: "-02", mes: "Fevereiro" },
+      { id: "-03", mes: "Março" },
+      { id: "-04", mes: "Abril" },
+      { id: "-05", mes: "Maio" },
+      { id: "-06", mes: "Junho" },
+      { id: "-07", mes: "Julho" },
+      { id: "-08", mes: "Agosto" },
+      { id: "-09", mes: "Setembro" },
+      { id: "-10", mes: "Outubro" },
+      { id: "-11", mes: "Novembro" },
+      { id: "-12", mes: "Dezembro" },
+    ]);
+    const searchAno = ref("");
+    const searchMes = ref("");
     onMounted(async () => {
       carregarVendas();
       valorT();
+      if (LocalStorage.getItem("acessp") != "admin") {
+        notifyinfo("Caro funcionário, existem área de acesso exclusivo!.");
+        router.push({ name: "vendas" });
+      }
     });
 
     const carregarVendas = async () => {
@@ -95,22 +152,58 @@ export default {
       } catch (error) {}
     };
 
-    watch(date, (data) => {
+    watch(date.value, (data) => {
       try {
         db.collection(tabela)
           .get()
           .then((itens) => {
-            const result = itens.filter((item) => item.data == data);
+            const result = itens.filter((item) => item.data == data.date);
             total.value = 0;
+            totalImposto.value = 0;
             for (let index = 0; index < result.length; index++) {
               const element = result[index];
               total.value += element.pago;
+              totalImposto.value += element.impostoIVA;
             }
           });
       } catch (error) {
         console.log(error.message);
       }
+
+      if (data.searchMes) {
+        data.date = data.searchAno + data.searchMes;
+        try {
+          db.collection(tabela)
+            .get()
+            .then((itens) => {
+              const result = itens.filter((item) => item.mesAno == data.date);
+              total.value = 0;
+              totalImposto.value = 0;
+              for (let index = 0; index < result.length; index++) {
+                const element = result[index];
+                total.value += element.pago;
+                totalImposto.value += element.impostoIVA;
+              }
+            });
+        } catch (error) {
+          console.log(error.message);
+        }
+      }
     });
+
+    const handleSelectChange = async (value) => {
+      date.value = searchAno.value + value;
+      const response = await db
+        .collection(tabela)
+        .get()
+        .then((item) => item.filter((item) => item.mesAno == date.value));
+
+      for (let index = 0; index < response.length; index++) {
+        const element = response[index];
+        total.value += parseInt(element.pago);
+        totalImposto.value += parseInt(element.impostoIVA);
+      }
+    };
 
     const deleteProduto = (key) => {
       try {
@@ -144,6 +237,7 @@ export default {
         for (let index = 0; index < response.length; index++) {
           const element = response[index];
           total.value += element.pago;
+          totalImposto.value += element.impostoIVA;
         }
       } catch (error) {
         console.log(error.message);
@@ -158,6 +252,11 @@ export default {
       total,
       valorT,
       deleteProduto,
+      totalImposto,
+      searchAno,
+      searchMes,
+      meses,
+      handleSelectChange,
     };
   },
 };

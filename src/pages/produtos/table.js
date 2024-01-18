@@ -37,6 +37,14 @@ const columns = [
     format: (val) => formatCurrency(val),
   },
   {
+    name: "impostoIVA",
+    field: "impostoIVA",
+    label: "Imposto IVA",
+    sortable: true,
+    align: "left",
+    format: (val) => formatCurrency(val),
+  },
+  {
     name: "data",
     field: "data",
     label: "Data de registro",

@@ -131,6 +131,7 @@ export default {
             );
           if (pass.length > 0) {
             LocalStorage.set("loja", getEmail[0].name);
+            LocalStorage.set("acesso", getEmail[0].acesso);
             router.push({ name: "admin" });
             notifySuccess("Acesso permitido");
           } else {

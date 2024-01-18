@@ -192,11 +192,14 @@
 </template>
 
 <script>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { columns } from "./table";
 import { Loading, Notify, Dialog } from "quasar";
 import { db } from "src/boot/localbase";
 import { formatCurrency } from "src/utils/formatNumber";
+import { LocalStorage } from "quasar";
+import { notification } from "src/utils/notify";
+import { useRouter } from "vue-router";
 
 export default {
   components: {},
@@ -204,8 +207,10 @@ export default {
     const tabela = "produtos";
     const filter = ref("");
     const loading = ref(true);
+    const { notifyError, notifyinfo } = notification();
     const isUpdate = ref("");
     const rows = ref([]);
+    const router = useRouter();
     const formularioCad = ref(false);
     const categorias = ref([]);
 
@@ -214,6 +219,7 @@ export default {
       produto: "",
       quantidade: 0,
       preco: 0,
+      valorAcrescentado: 5,
       data: new Date().toJSON().slice(0, 10),
       imageUrl: "",
     });
@@ -244,6 +250,7 @@ export default {
         produto: "",
         quantidade: 0,
         preco: 0,
+        valorAcrescentado: 5,
         data: new Date().toJSON().slice(0, 10),
         imageUrl: "",
       };
@@ -256,7 +263,7 @@ export default {
         form.value.produto = response.produto;
         form.value.preco = response.preco;
         form.value.preco = response.preco;
-        form.value.img_url = response.img_url;
+        form.value.imageUrl = response.imageUrl.imageUrl;
         form.value.quantidade = response.quantidade;
         isUpdate.value = id;
         formularioCad.value = true;
@@ -312,17 +319,29 @@ export default {
                 produto: form.value.produto,
                 imageUrl: form.value.imageUrl,
               };
-              console.log(imageObject);
-              const { produto, categoria, preco, quantidade, data, img_url } =
-                form.value;
-              await db.collection(tabela).doc(isUpdate.value).update({
-                produto: produto,
-                categoria: categoria.categoria,
-                preco: preco,
-                quantidade: quantidade,
-                data: data,
-                imageUrl: imageObject,
-              });
+              const {
+                produto,
+                categoria,
+                preco,
+                quantidade,
+                data,
+                valorAcrescentado,
+              } = form.value;
+              const valIva = (valorAcrescentado / 100) * preco;
+
+              await db
+                .collection(tabela)
+                .doc(isUpdate.value)
+                .update({
+                  produto: produto,
+                  categoria: categoria.categoria,
+                  preco: preco,
+                  impostoIVA: valIva,
+                  valorAcrescentado: valIva + preco,
+                  quantidade: quantidade,
+                  data: data,
+                  imageUrl: imageObject,
+                });
               db.objectStorage;
               Notify.create({
                 message: "O produto foi actualizado com sucesso",
@@ -342,12 +361,21 @@ export default {
               };
               console.log(imageObject);
               Loading.show();
-              const { produto, categoria, preco, quantidade, data, img_url } =
-                form.value;
+              const {
+                produto,
+                categoria,
+                preco,
+                quantidade,
+                data,
+                valorAcrescentado,
+              } = form.value;
+              const valIva = (valorAcrescentado / 100) * preco;
               await db.collection(tabela).add({
                 produto: produto,
                 categoria: categoria.categoria,
                 preco: preco,
+                impostoIVA: valIva,
+                valorAcrescentado: valIva + preco,
                 quantidade: quantidade,
                 data: data,
                 imageUrl: imageObject,
@@ -364,6 +392,7 @@ export default {
           }
         }
       } catch (error) {
+        console.log(error.message);
         Notify.create({
           message: error.message,
           position: "top",
@@ -379,6 +408,10 @@ export default {
     onMounted(() => {
       carregarInfo();
       carregarInfoCateg();
+      if (LocalStorage.getItem("acessp") != "admin") {
+        notifyinfo("Caro funcionário, existem área de acesso exclusivo!.");
+        router.push({ name: "vendas" });
+      }
     });
 
     const carregarInfo = async () => {

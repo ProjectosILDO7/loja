@@ -139,12 +139,18 @@
               }}</b></span
             >
             <q-space />
-            <span class="text-body2">
-              Total:
+            <div class="text-body2">
+              Subtotal:
               <b class="text-green-10">{{
                 formatCurrency(produto.pagamento)
-              }}</b></span
-            >
+              }}</b>
+              <br />
+              <span class="text-body2"> IVA: {{ formatCurrency(valIva) }}</span>
+              <br />
+              <span class="text-body2"
+                ><b>TOTAL: </b>{{ formatCurrency(pagamentoTotal) }}</span
+              >
+            </div>
           </div>
           <div class="col-6">
             <q-btn
@@ -160,8 +166,8 @@
         </q-form>
 
         <!-- Factura -->
-        <div id="conteudoRelatorio" class="row q-mt-md" hidden>
-          <div class="col-6">
+        <div id="conteudoRelatorio" class="row q-mt-md">
+          <div class="col-6" hidden>
             <p class="text-h3">Fatura</p>
             <p class="text-h5">Loja-LC</p>
             <p class="text-caption topMargin">
@@ -171,7 +177,7 @@
             <p class="text-h6">Cobrar ao Senhor (a):</p>
             <p class="text-body1 topMargin">[ {{ produto.cliente }} ]</p>
           </div>
-          <div class="col-6 text-right">
+          <div class="col-6 text-right" hidden>
             <p>
               <q-img
                 src="../../../public/icons/favicon-96x96.png"
@@ -196,6 +202,7 @@
               font-family: 'Arial', sans-serif;
               font-size: 14px;
             "
+            hidden
           >
             <tr>
               <th>Produto</th>
@@ -266,7 +273,7 @@
           <br />
           <br />
           <q-separator />
-          <table style="width: 100%">
+          <table style="width: 100%" hidden>
             <tr>
               <td>Volte sempre</td>
               <td></td>
@@ -306,6 +313,8 @@ export default defineComponent({
     const { notifyError, notifySuccess, notifyinfo } = notification();
     const $q = useQuasar();
     const TotalFatura = ref(0);
+    const valIva = ref(0);
+    const pagamentoTotal = ref(0);
     const conteudoRelatorio = ref();
     const produtosVendas = ref([]);
     const produto = ref({
@@ -314,6 +323,7 @@ export default defineComponent({
       preco: 0,
       quantidade: 0,
       pagamento: 0,
+      impostIVA: 0,
       quantidadeCliente: 1,
       imageUrl: "",
       cliente: "",
@@ -378,8 +388,10 @@ export default defineComponent({
               produto.value.resto = 0;
               return;
             }
-            produto.value.resto = valor.valorEntrada - valor.pagamento;
+            produto.value.resto = valor.valorEntrada - pagamentoTotal.value;
             produto.value.pagamento = valorProd;
+            valIva.value = (5 / 100) * produto.value.pagamento;
+            pagamentoTotal.value = valIva.value + produto.value.pagamento;
           }
 
           produtosVendas.value.push({
@@ -393,6 +405,8 @@ export default defineComponent({
       } else {
         //notifyinfo("Informe o valor que recebeu do cliente");
         produto.value.pagamento = valorProd;
+        valIva.value = (5 / 100) * produto.value.pagamento;
+        pagamentoTotal.value = valIva.value + produto.value.pagamento;
       }
     });
     const carregarProd = async (key) => {
@@ -420,7 +434,7 @@ export default defineComponent({
           return;
         }
 
-        if (produto.value.valorEntrada < produto.value.pagamento) {
+        if (produto.value.valorEntrada < pagamentoTotal.value) {
           notifyinfo(
             "O valor que recebeu do cliente é menor que o preço total do produto!"
           );
@@ -440,19 +454,21 @@ export default defineComponent({
           .onOk(async () => {
             await db.collection("vendasRealizadas").add({
               produto: produto.value.produto,
-              pago: produto.value.pagamento,
+              pago: pagamentoTotal.value,
+              impostoIVA: valIva.value,
               preco: produto.value.preco,
               quantidade: produto.value.quantidadeCliente,
               cliente: produto.value.cliente,
               contacto: produto.value.contacto,
               funcionario: userLocalStorage,
               data: produto.value.dataVenda,
+              mesAno: produto.value.dataVenda.slice(0, 7),
             });
 
             await db.collection("ordemFactura").add({
               produto: produto.value.produto,
               cliente: produto.value.cliente,
-              pago: produto.value.pagamento,
+              pago: pagamentoTotal.value,
               data: produto.value.dataVenda,
             });
 
@@ -471,13 +487,15 @@ export default defineComponent({
           .onCancel(async () => {
             await db.collection("vendasRealizadas").add({
               produto: produto.value.produto,
-              pago: produto.value.pagamento,
+              pago: pagamentoTotal.value,
+              impostoIVA: valIva.value,
               preco: produto.value.preco,
               quantidade: produto.value.quantidadeCliente,
               cliente: produto.value.cliente,
               contacto: produto.value.contacto,
               funcionario: userLocalStorage,
               data: produto.value.dataVenda,
+              mesAno: produto.value.dataVenda.slice(0, 7),
             });
 
             await db.collection(tabela).doc(key).update({
@@ -535,6 +553,8 @@ export default defineComponent({
       dataFatura,
       TotalFatura,
       carregarOrdemFatuta,
+      valIva,
+      pagamentoTotal,
     };
   },
 });

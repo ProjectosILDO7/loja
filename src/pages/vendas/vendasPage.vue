@@ -65,7 +65,31 @@
                     <span class="q-ml-sm">
                       Preço Unit:
                       <span class="text-green-10"
-                        ><b>{{ formatCurrency(props.row.preco) }}</b></span
+                        ><b> {{ formatCurrency(props.row.preco) }}</b></span
+                      >
+                    </span>
+                  </div>
+                  <div class="row justify-left q-mt-sm">
+                    <span class="q-ml-sm">
+                      Valor do Imposto:
+                      <span class="text-green-10"
+                        ><b>
+                          {{ formatCurrency(props.row.impostoIVA) }}</b
+                        ></span
+                      >
+                    </span>
+                  </div>
+                  <div class="row justify-left q-mt-sm">
+                    <span class="q-ml-sm">
+                      Preço total
+                      <span class="text-green-10"
+                        ><b>
+                          {{
+                            formatCurrency(
+                              props.row.impostoIVA + parseInt(props.row.preco)
+                            )
+                          }}</b
+                        ></span
                       >
                     </span>
                   </div>
@@ -115,6 +139,7 @@ export default {
     const loading = ref(false);
     const tabela = "produtos";
     const filter = ref("");
+    const valIva = ref(0);
     const { notifySuccess, notifyError, notifyinfo } = notification();
     const router = useRouter();
     const form = ref({
@@ -128,6 +153,8 @@ export default {
     onMounted(() => {
       carregarInfo();
       carregarInfoCateg();
+
+      valIva.value = 14 / 100;
     });
 
     const addVenda = (key) => {
@@ -180,6 +207,7 @@ export default {
       form,
       formatCurrency,
       addVenda,
+      valIva,
     };
   },
 };

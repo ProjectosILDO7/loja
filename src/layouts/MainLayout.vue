@@ -34,7 +34,12 @@
               </q-item-section>
             </q-item> -->
 
-            <q-item clickable v-close-popup @click="addFuncionarios">
+            <q-item
+              clickable
+              v-close-popup
+              @click="addFuncionarios"
+              v-if="acesso"
+            >
               <q-item-section>
                 <q-item-label
                   ><q-avatar icon="mdi-account-tie" /> Funcionários
@@ -139,11 +144,18 @@ export default defineComponent({
     const { brand, getBrand } = useApi();
     const user = ref("");
     const router = useRouter();
+    const acesso = ref(false);
     const idUser = ref("");
     const $q = useQuasar();
     onMounted(() => {
       getBrand();
-      CarregarUser();
+      //CarregarUser();
+      if (LocalStorage.getItem("acesso") != "admin") {
+        acesso.value = false;
+        user.value = LocalStorage.getItem("loja");
+      } else {
+        acesso.value = true;
+      }
     });
 
     const formConfig = () => {
@@ -154,22 +166,22 @@ export default defineComponent({
       router.push({ name: "addFuncionarios" });
     };
 
-    const CarregarUser = async () => {
-      try {
-        const userName = await db
-          .collection("users")
-          .get()
-          .then((item) => item.filter((data) => data.status == 1));
-        idUser.value = userName[0].email;
-        if (userName.length > 0) {
-          user.value = userName[0].name;
-        } else {
-          router.push({ name: "login" });
-        }
-      } catch (error) {
-        console.log(error.message);
-      }
-    };
+    // const CarregarUser = async () => {
+    //   try {
+    //     const userName = await db
+    //       .collection("users")
+    //       .get()
+    //       .then((item) => item.filter((data) => data.status == 1));
+    //     idUser.value = userName[0].email;
+    //     if (userName.length > 0) {
+    //       user.value = userName[0].name;
+    //     } else {
+    //       router.push({ name: "login" });
+    //     }
+    //   } catch (error) {
+    //     console.log(error.message);
+    //   }
+    // };
 
     const logoutPage = async () => {
       const email = LocalStorage.getItem("loja");
@@ -194,6 +206,7 @@ export default defineComponent({
       addFuncionarios,
       idUser,
       logoutPage,
+      acesso,
     };
   },
 });
