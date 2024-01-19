@@ -155,6 +155,7 @@ export default defineComponent({
         user.value = LocalStorage.getItem("loja");
       } else {
         acesso.value = true;
+        user.value = LocalStorage.getItem("loja");
       }
     });
 

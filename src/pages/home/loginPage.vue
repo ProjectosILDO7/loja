@@ -137,6 +137,8 @@ export default {
           } else {
             notifyError("A senha que digitou está errada...!");
           }
+
+          console.log(getEmail);
         } else {
           notifyError(
             "Acesso negado, ou precisas de permissão do Administrador...!"

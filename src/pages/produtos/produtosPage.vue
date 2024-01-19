@@ -408,7 +408,7 @@ export default {
     onMounted(() => {
       carregarInfo();
       carregarInfoCateg();
-      if (LocalStorage.getItem("acessp") != "admin") {
+      if (LocalStorage.getItem("acesso") != "admin") {
         notifyinfo("Caro funcionário, existem área de acesso exclusivo!.");
         router.push({ name: "vendas" });
       }

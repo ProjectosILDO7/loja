@@ -301,15 +301,8 @@ import { db } from "src/boot/localbase";
 import { formatCurrency } from "./utils";
 import { notification } from "src/utils/notify";
 import { LocalStorage, useQuasar } from "quasar";
-//import html2pdf from "html2pdf.js";
-//import ThermalPrinter from "node-thermal-printer";
-//import jsPDF from "jspdf";
-//import { columnsFatura } from "./tableFatura";
-//import escpos from "escpos";
-//import QrcodeStream from "vue-qrcode-reader";
-// Em vez de importar 'default', importe a exportação nomeada específica
-//import { QrcodeStream } from "/node_modules/.q-cache/vite/spa/deps/vue-qrcode-reader.js";
-import { fatura } from "./printFatura";
+
+import faturacao from "./printFatura";
 
 export default defineComponent({
   //components: { QrcodeStream },
@@ -321,6 +314,7 @@ export default defineComponent({
     const dataFatura = new Date().toJSON().slice(0, 10);
     const { notifyError, notifySuccess, notifyinfo } = notification();
     const $q = useQuasar();
+    const { fatura } = faturacao();
     const TotalFatura = ref(0);
 
     const valIva = ref(0);
@@ -333,6 +327,7 @@ export default defineComponent({
       preco: 0,
       quantidade: 0,
       pagamento: 0,
+      pagamentoTotal: pagamentoTotal.value,
       impostIVA: 0,
       quantidadeCliente: 1,
       imageUrl: "",
@@ -489,8 +484,7 @@ export default defineComponent({
             carregarOrdemFatuta();
             carregarProd(produto.value.produto_key);
             notifySuccess("Produto vendido com sucesso...!");
-            const { printFatura } = fatura();
-            printFatura(produto.value);
+            fatura(produto.value);
           })
           .onOk(() => {
             // console.log('>>>> second OK catcher')
