@@ -166,7 +166,8 @@
         </q-form>
 
         <!-- Factura -->
-        <div id="conteudoRelatorio" class="row q-mt-md">
+        <!-- <div id="conteudoRelatorio" class="row q-mt-md">
+
           <div class="col-6" hidden>
             <p class="text-h3">Fatura</p>
             <p class="text-h5">Loja-LC</p>
@@ -286,7 +287,8 @@
               </td>
             </tr>
           </table>
-        </div>
+        </div> -->
+        <qrcode-stream @decode="onDecode"></qrcode-stream>
       </q-page>
     </q-page-container>
   </q-layout>
@@ -299,11 +301,18 @@ import { db } from "src/boot/localbase";
 import { formatCurrency } from "./utils";
 import { notification } from "src/utils/notify";
 import { LocalStorage, useQuasar } from "quasar";
-import html2pdf from "html2pdf.js";
+//import html2pdf from "html2pdf.js";
+//import ThermalPrinter from "node-thermal-printer";
 //import jsPDF from "jspdf";
-import { columnsFatura } from "./tableFatura";
+//import { columnsFatura } from "./tableFatura";
+//import escpos from "escpos";
+//import QrcodeStream from "vue-qrcode-reader";
+// Em vez de importar 'default', importe a exportação nomeada específica
+//import { QrcodeStream } from "/node_modules/.q-cache/vite/spa/deps/vue-qrcode-reader.js";
+import { fatura } from "./printFatura";
 
 export default defineComponent({
+  //components: { QrcodeStream },
   setup() {
     const tabela = "produtos";
     const route = useRoute();
@@ -313,6 +322,7 @@ export default defineComponent({
     const { notifyError, notifySuccess, notifyinfo } = notification();
     const $q = useQuasar();
     const TotalFatura = ref(0);
+
     const valIva = ref(0);
     const pagamentoTotal = ref(0);
     const conteudoRelatorio = ref();
@@ -479,7 +489,8 @@ export default defineComponent({
             carregarOrdemFatuta();
             carregarProd(produto.value.produto_key);
             notifySuccess("Produto vendido com sucesso...!");
-            printPdf();
+            const { printFatura } = fatura();
+            printFatura(produto.value);
           })
           .onOk(() => {
             // console.log('>>>> second OK catcher')
@@ -514,28 +525,28 @@ export default defineComponent({
       }
     };
 
-    const printPdf = async () => {
-      const content = document.querySelector("#conteudoRelatorio");
-      var opt = {
-        margin: 1,
-        filename: "fatura.pdf",
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
-      };
+    // const printPdf = async () => {
+    //   const content = document.querySelector("#conteudoRelatorio");
+    //   var opt = {
+    //     margin: 1,
+    //     filename: "fatura.pdf",
+    //     image: { type: "jpeg", quality: 0.98 },
+    //     html2canvas: { scale: 2 },
+    //     jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+    //   };
 
-      html2pdf()
-        .from(content)
-        .outputPdf((pdf) => {
-          const fatura = pdf.output("fatura");
-          const blobUrl = URL.createObjectURL(fatura);
+    //   html2pdf()
+    //     .from(content)
+    //     .outputPdf((pdf) => {
+    //       const fatura = pdf.output("fatura");
+    //       const blobUrl = URL.createObjectURL(fatura);
 
-          // Exibe o PDF em uma nova janela ou guia
-          window.open(blobUrl, "_blank");
-        }, opt);
+    //       // Exibe o PDF em uma nova janela ou guia
+    //       window.open(blobUrl, "_blank");
+    //     }, opt);
 
-      html2pdf().set(opt).from(content).save();
-    };
+    //   html2pdf().set(opt).from(content).save();
+    // };
 
     return {
       tabela,
@@ -548,8 +559,6 @@ export default defineComponent({
       totalVenda,
       listaVendas,
       conteudoRelatorio,
-      printPdf,
-      columnsFatura,
       dataFatura,
       TotalFatura,
       carregarOrdemFatuta,
