@@ -1,6 +1,3 @@
-import { useRouter } from "vue-router";
-import { LocalStorage } from "quasar";
-const router = useRouter();
 const routes = [
   {
     path: "/admin",
@@ -58,7 +55,6 @@ const routes = [
           import("src/pages/funcionarios/listarFuncionarios.vue"),
       },
     ],
-    meta: { requiresAuth: true },
   },
 
   {

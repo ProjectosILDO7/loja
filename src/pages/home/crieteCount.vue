@@ -134,6 +134,7 @@ export default {
           router.push({ name: "login" });
         }
       } catch (error) {
+        console.log(error.message);
         notifyError(error.message);
       } finally {
         Loading.hide();

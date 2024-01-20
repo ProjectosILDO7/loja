@@ -7,11 +7,16 @@
 
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
-global.Buffer = global.Buffer || require("buffer").Buffer;
-const { configure } = require("quasar/wrappers");
-const path = require("path");
+//global.Buffer = global.Buffer || require("buffer").Buffer;
 
-module.exports = configure(function (/* ctx */) {
+const { configure } = require("quasar/wrappers");
+
+//import configure from "quasar/wrappers";
+
+const path = require("path");
+//import path from "path";
+
+module.exports = configure(function (ctx) {
   return {
     eslint: {
       // fix: true,
@@ -93,7 +98,7 @@ module.exports = configure(function (/* ctx */) {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
     devServer: {
-      // https: true
+      https: true,
       open: true, // opens browser window automatically
     },
 
@@ -162,6 +167,7 @@ module.exports = configure(function (/* ctx */) {
     pwa: {
       workboxMode: "generateSW", // or 'injectManifest'
       injectPwaMetaTags: true,
+      workboxOptions: { skipWeiting: true, clientsClain: true },
       swFilename: "sw.js",
       manifestFilename: "manifest.json",
       useCredentialsForManifestTag: false,
@@ -191,7 +197,7 @@ module.exports = configure(function (/* ctx */) {
       inspectPort: 5858,
 
       bundler: "packager", // 'packager' or 'builder'
-
+      preload: "src-electron/electron-preload.js",
       packager: {
         // https://github.com/electron-userland/electron-packager/blob/master/docs/api.md#options
         // OS X / Mac App Store
@@ -203,11 +209,28 @@ module.exports = configure(function (/* ctx */) {
         // win32metadata: { ... }
       },
 
+      browserWindow: {
+        // Configurações do BrowserWindow
+        webPreferences: {
+          // Habilitar o contexto de isolamento de scripts para renderizar processos
+          contextIsolation: true,
+
+          // Configuração da política de segurança de conteúdo
+          additionalArguments: ["--enable-features=WebAssemblySimd"],
+        },
+      },
+
+      extendWebpack(cfg) {
+        // configurações adicionais do Webpack, se necessário
+      },
+
       builder: {
         // https://www.electron.build/configuration/configuration
-
-        appId: "loja",
+        appId: "com.example.loja",
+        productName: "Loja App",
       },
+
+      // Configurações do servidor de desenvolvimento
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-browser-extensions/configuring-bex

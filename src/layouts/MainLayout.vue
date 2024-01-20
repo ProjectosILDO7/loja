@@ -192,6 +192,7 @@ export default defineComponent({
         router.push({ name: "" });
         location.reload();
         $q.loading.hide();
+        window.close();
       }
     };
 

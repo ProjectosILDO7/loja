@@ -14,6 +14,7 @@
             row-key="name"
             :filter="filter"
             hide-header
+            rows-per-page-label="3"
             rows-per-page-options="3"
           >
             <template v-slot:top>

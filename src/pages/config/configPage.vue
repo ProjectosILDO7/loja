@@ -103,9 +103,9 @@ export default defineComponent({
     };
 
     const saveConfig = async () => {
-      console.log(totalConfig);
+      console.log(totalConfig.value);
       try {
-        if (totalConfig.value > 0) {
+        if (totalConfig.value != 0) {
           $q.loading.show();
           const { name, phone, nif, primary, secondary } = form.value;
           await db.collection(tabela).doc(idConfig.value).update({
@@ -134,7 +134,7 @@ export default defineComponent({
           location.reload();
         }
       } catch (error) {
-        console.log(error.message);
+        console.log(error);
       } finally {
         $q.loading.hide();
         router.push({ name: "admin" });

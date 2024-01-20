@@ -164,131 +164,6 @@
             />
           </div>
         </q-form>
-
-        <!-- Factura -->
-        <!-- <div id="conteudoRelatorio" class="row q-mt-md">
-
-          <div class="col-6" hidden>
-            <p class="text-h3">Fatura</p>
-            <p class="text-h5">Loja-LC</p>
-            <p class="text-caption topMargin">
-              Comercio e Prestação de serviço
-            </p>
-            <br />
-            <p class="text-h6">Cobrar ao Senhor (a):</p>
-            <p class="text-body1 topMargin">[ {{ produto.cliente }} ]</p>
-          </div>
-          <div class="col-6 text-right" hidden>
-            <p>
-              <q-img
-                src="../../../public/icons/favicon-96x96.png"
-                style="max-width: 20%"
-              />
-            </p>
-
-            <p class="topMargin">
-              <span class="text-h6">Fatura nº: {{ TotalFatura + 1 }}</span>
-            </p>
-            <p class="topMargin">
-              <span class="text-h6">Data da Fatura: </span>
-              {{ dataFatura }}
-            </p>
-          </div>
-
-          <q-separator />
-          <table
-            class="q-mt-sm"
-            style="
-              width: 100%;
-              font-family: 'Arial', sans-serif;
-              font-size: 14px;
-            "
-            hidden
-          >
-            <tr>
-              <th>Produto</th>
-              <th>Preço Unit.</th>
-              <th>Qt.</th>
-              <th>Total</th>
-            </tr>
-            <tr>
-              <td>{{ produto.produto }}</td>
-              <td>{{ formatCurrency(produto.preco) }}</td>
-              <td>{{ produto.quantidadeCliente }}</td>
-              <td>{{ formatCurrency(produto.pagamento) }}</td>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td align="right" style="text-align: right"><b>Subtotal</b></td>
-              <td>{{ formatCurrency(produto.pagamento) }}</td>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td align="right" style="text-align: right"><b>IVA</b></td>
-              <td>{{ formatCurrency(0) }}</td>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td align="right" style="text-align: right"><b>Total</b></td>
-              <td>{{ formatCurrency(produto.pagamento) }}</td>
-            </tr>
-          </table>
-
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <q-separator />
-          <table style="width: 100%" hidden>
-            <tr>
-              <td>Volte sempre</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-              <td>
-                <p><b>Termos e condições</b></p>
-                <p class="text-caption topMargin">Pagamento por prepago</p>
-              </td>
-            </tr>
-          </table>
-        </div> -->
-        <qrcode-stream @decode="onDecode"></qrcode-stream>
       </q-page>
     </q-page-container>
   </q-layout>
@@ -305,7 +180,7 @@ import { LocalStorage, useQuasar } from "quasar";
 import faturacao from "./printFatura";
 
 export default defineComponent({
-  //components: { QrcodeStream },
+  //components: {  },
   setup() {
     const tabela = "produtos";
     const route = useRoute();
@@ -405,7 +280,6 @@ export default defineComponent({
             preco: produto.value.preco,
             pagamento: produto.value.pagamento,
           });
-          console.log(produtosVendas.value);
         }
       } else {
         //notifyinfo("Informe o valor que recebeu do cliente");
@@ -518,29 +392,6 @@ export default defineComponent({
       } finally {
       }
     };
-
-    // const printPdf = async () => {
-    //   const content = document.querySelector("#conteudoRelatorio");
-    //   var opt = {
-    //     margin: 1,
-    //     filename: "fatura.pdf",
-    //     image: { type: "jpeg", quality: 0.98 },
-    //     html2canvas: { scale: 2 },
-    //     jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
-    //   };
-
-    //   html2pdf()
-    //     .from(content)
-    //     .outputPdf((pdf) => {
-    //       const fatura = pdf.output("fatura");
-    //       const blobUrl = URL.createObjectURL(fatura);
-
-    //       // Exibe o PDF em uma nova janela ou guia
-    //       window.open(blobUrl, "_blank");
-    //     }, opt);
-
-    //   html2pdf().set(opt).from(content).save();
-    // };
 
     return {
       tabela,
