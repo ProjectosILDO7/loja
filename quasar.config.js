@@ -94,6 +94,9 @@ module.exports = configure(function (ctx) {
           },
         ],
       ],
+      babel: {
+        presets: [["@quasar/babel-preset-app", { modules: "auto" }]],
+      },
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
