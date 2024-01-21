@@ -63,7 +63,7 @@ module.exports = configure(function (ctx) {
       // vueRouterBase,
       // vueDevtools,
       // vueOptionsAPI: false,
-
+      supportIE: false,
       // rebuildCache: true, // rebuilds Vite/linter/etc cache on startup
 
       // publicPath: '/',
